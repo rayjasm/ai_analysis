@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <title>app</title>
+    <meta charset="UTF-8">
+    </head>
+
+    <body>
+        <form action="{% url 'form' %}" method="post">
+            {% csrf_token %}
+            <label for="img_path" class="form-label">image path :</label>
+            <input id="img_path" type="text" name="img_path" class="form-control">
+            <input type="submit" value="submit" class="btn btn-primary">           
+        </form>
+        <br>
+        <p>result: {{result}}</p>
+    </body>
+
+</html>
