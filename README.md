@@ -1,10 +1,10 @@
 # django
-version : django 4.2.5
-
+version : django 4.2.5 <br>
+<br>
 ```bash
 run python manage.py runserver
 ```
-
-admin/
-user : admin
-pass : aiueo
+<br>
+admin/ <br>
+user : admin<br>
+pass : aiueo<br>
