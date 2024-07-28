@@ -1,5 +1,4 @@
 from django.db import models
-import time
 
 class AiAnalysisLog(models.Model):
     id = models.IntegerField(primary_key=True)

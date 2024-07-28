@@ -4,7 +4,7 @@ from .forms import Form
 from .models import AiAnalysisLog
 import requests
 import json
-import pprint
+import datetime
 
 # 静的ファイルを読み込む
 def index(request):
@@ -19,23 +19,31 @@ def req(img_path):
     url = "http://127.0.0.1:8010"
     img_path = {'image_path': img_path}
     headers = {'Content-Type': 'application/json'}
+    # リクエスト時間取得
+    now = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
     try:
         result = requests.post(url, data=json.dumps(img_path), headers=headers).json()
+        result['request_timestamp'] = now
     except requests.exceptions.RequestException:
         # テスト用のレスポンス
         result = { 'success': False, 'message': 'Error:E50012'}
+        result['request_timestamp'] = now
+
+    # レスポンス時間取得
+    result['response_timestamp'] = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
     return result
 
 # DBに保存
-def createRecord(result):
+def createRecord(result, img_path):
     estimated_data=result.get('estimated_data', {})
-    ai_analysis_log = AiAnalysisLog(image_path=result.get('image_path')or None, \
-        success=str(result.get('success'))or None,\
-            message=result.get('message')or None, \
+    
+    ai_analysis_log = AiAnalysisLog(image_path=img_path, \
+        success=str(result.get('success')),\
+            message=result.get('message'), \
                 returnclass=estimated_data.get('class')or None, \
                     confidence=estimated_data.get('confidence')or None, \
-                        request_timestamp=result.get('request_timestamp')or None, \
-                            response_timestamp=result.get('response_timestamp')or None)
+                        request_timestamp=result.get('request_timestamp'), \
+                            response_timestamp=result.get('response_timestamp'))
     ai_analysis_log.save()
 
 # フォーム機能
@@ -47,7 +55,7 @@ def form(request):
     }
     
     result = req(img_path)
-    createRecord(result)
+    createRecord(result, img_path)
     
     # リクエストの結果を分類
     if result['success']:
