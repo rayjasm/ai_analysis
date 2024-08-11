@@ -2,6 +2,8 @@ from django.shortcuts import render
 from django.http import HttpRequest, HttpResponse
 from .forms import Form
 from .models import AiAnalysisLog
+from zoneinfo import ZoneInfo
+from requests.exceptions import Timeout
 import requests
 import json
 import datetime
@@ -20,17 +22,17 @@ def req(img_path):
     img_path = {'image_path': img_path}
     headers = {'Content-Type': 'application/json'}
     # リクエスト時間取得
-    now = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+    now = datetime.datetime.now(ZoneInfo("Asia/Tokyo")).strftime('%Y%m%d%H%M%S')
     try:
-        result = requests.post(url, data=json.dumps(img_path), headers=headers).json()
+        result = requests.post(url, data=json.dumps(img_path), headers=headers, timeout=(3.0, 7.5)).json()
         result['request_timestamp'] = now
-    except requests.exceptions.RequestException:
+    except (requests.exceptions.RequestException, Timeout, ConnectionError):
         # テスト用のレスポンス
         result = { 'success': False, 'message': 'Error:E50012'}
         result['request_timestamp'] = now
 
     # レスポンス時間取得
-    result['response_timestamp'] = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+    result['response_timestamp'] = datetime.datetime.now(ZoneInfo("Asia/Tokyo")).strftime('%Y%m%d%H%M%S')
     return result
 
 # DBに保存
@@ -61,7 +63,7 @@ def form(request):
     if result['success']:
         result = 'image class is: ' + str(result['estimated_data']['class']) + '.'
     else:
-        result = 'API request failed'
+        result = 'Request failed'
 
     # 結果を画面の変数に渡す
     params['result'] = result
